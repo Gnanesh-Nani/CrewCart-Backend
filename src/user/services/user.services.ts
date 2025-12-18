@@ -21,13 +21,13 @@ export class UserService {
                     relations:{profile:true},
                     select:{
                         id:true,
-                        username:true,
                         status:true,
                         profile: {
                             fullName:true,
                             avatarUrl:true,
                             bikeModel:true,
                             bikeNumber:true,
+                            userName:true,
                             bio:true,
                             createdAt:true
                         }

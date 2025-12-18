@@ -17,14 +17,14 @@ export class FriendsController {
         return this.friendsService.getFriendRequestList(req);
     }
 
-    @Post('request/:friendId')
-    async sendRequest(@Req() req: Request,@Param('friendId') friendId: string) {
-        return this.friendsService.sendFriendRequest(req,friendId);
+    @Post('request/:receiverId')
+    async sendRequest(@Req() req: Request,@Param('receiverId') receiverId: string) {
+        return this.friendsService.sendFriendRequest(req,receiverId);
     }
 
-    @Post('accept/:friendId')
-    async acceptRequest(@Req() req: Request,@Param('friendId') friendId: string) {
-        return this.friendsService.acceptFriendRequest(req,friendId);
+    @Post('accept/:senderId')
+    async acceptRequest(@Req() req: Request,@Param('senderId') senderId: string) {
+        return this.friendsService.acceptFriendRequest(req,senderId);
     }
 
     @Delete('remove/:friendId')

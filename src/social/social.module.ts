@@ -1,15 +1,17 @@
 import { Module } from '@nestjs/common';
 import { SocialController } from './controllers/social.controller';
-import { FriendsController
+import {
+  FriendsController
 
- } from './controllers/friends.controller';
+} from './controllers/friends.controller';
 import { FriendsService } from './services/friends.services';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { FriendShip } from './entities/friendships.entity';
 import { User } from 'src/user/entities/user.entity';
+import { Friend } from './entities/friendships.entity';
+import { FriendRequest } from './entities/friend-requests.entity';
 @Module({
-  imports:[TypeOrmModule.forFeature([FriendShip,User])],
-  providers:[FriendsService],
+  imports: [TypeOrmModule.forFeature([User,Friend,FriendRequest])],
+  providers: [FriendsService],
   controllers: [SocialController, FriendsController]
 })
-export class SocialModule {}
+export class SocialModule { }
