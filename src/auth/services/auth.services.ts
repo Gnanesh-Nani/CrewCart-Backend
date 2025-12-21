@@ -3,7 +3,6 @@ import { RegisterDto } from "../dtos/register.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/user/entities/user.entity";
 import { Repository } from "typeorm";
-import { Profile } from "src/user/entities/profile.entity";
 import * as bcrypt from "bcrypt";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
@@ -17,7 +16,6 @@ import { Request, Response } from "express";
 export class AuthService {
     constructor(
         @InjectRepository(User) private userRepository: Repository<User>,
-        @InjectRepository(Profile) private profileRepository: Repository<Profile>,
         @Inject(ConfigService) private configService: ConfigService,
         @Inject(JwtService) private jwtService: JwtService
     ) { }
@@ -49,12 +47,13 @@ export class AuthService {
             const password_hash = await bcrypt.hash(registerDto.password,12);
             const user = this.userRepository.create(
                 {
-                    username: registerDto.username,
+                    
                     email: registerDto.email,
                     phone: registerDto.phone,
                     passwordHash: password_hash,
                     profile: {
-                        fullName: registerDto.fullName
+                        fullName: registerDto.fullName,
+                        userName: registerDto.username
                     }
                 }
             )

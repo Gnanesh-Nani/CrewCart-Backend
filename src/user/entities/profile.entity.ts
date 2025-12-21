@@ -4,13 +4,16 @@ import { User } from './user.entity';
 @Entity('profiles')
 export class Profile {
   @PrimaryColumn({ type: 'bigint', name: 'user_id' })
-  userId: number;
+  userId: string;
 
   @OneToOne(() => User, (user) => user.profile, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @Column({ type: 'varchar', length: 50, unique: true })
+  userName: string;
 
   @Column({ type: 'varchar', length: 100, name: 'full_name', nullable: true })
   fullName: string;

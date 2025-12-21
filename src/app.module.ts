@@ -8,6 +8,7 @@ import { UserModule } from './user/user.module';
 import { SocialModule } from './social/social.module';
 import { JwtSessionMiddleware } from './common/middlewares/jwt-session.middleware';
 import { JwtService } from '@nestjs/jwt';
+import { RideModule } from './ride/ride.module';
 
 @Module({
   imports: [
@@ -33,7 +34,8 @@ import { JwtService } from '@nestjs/jwt';
     }),
     AuthModule,
     UserModule,
-    SocialModule
+    SocialModule,
+    RideModule
   ],
   controllers: [AppController],
   providers: [AppService,JwtService],
