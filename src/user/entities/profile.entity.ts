@@ -4,7 +4,7 @@ import { User } from './user.entity';
 @Entity('profiles')
 export class Profile {
   @PrimaryColumn({ type: 'bigint', name: 'user_id' })
-  userId: number;
+  userId: string;
 
   @OneToOne(() => User, (user) => user.profile, {
     onDelete: 'CASCADE',

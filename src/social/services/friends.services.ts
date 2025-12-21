@@ -1,4 +1,4 @@
-import { Body, Inject, Injectable, Logger, Req } from "@nestjs/common";
+import { Injectable,  Req } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import type { Request } from "express";
 import { User } from "src/user/entities/user.entity";
@@ -8,7 +8,6 @@ import { RequestStatus } from "src/common/enums/friend-request-status.enum";
 import { handleResponse } from "src/common/utils/response.utils";
 import { FriendRequest } from "../entities/friend-requests.entity";
 import { Friend } from "../entities/friendships.entity";
-import { profile } from "console";
 import { Profile } from "src/user/entities/profile.entity";
 
 @Injectable()
@@ -102,7 +101,7 @@ export class FriendsService {
                 receiverId
             })
             await this.friendRequestRepository.save(friendRequest);
-            return handleResponse("Friend Request Successfully Sent");
+            return handleResponse({},"Friend Request Successfully Sent");
         } catch (error) {
             return handleError(error.message)
         }
