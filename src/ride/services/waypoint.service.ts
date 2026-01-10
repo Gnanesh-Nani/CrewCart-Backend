@@ -44,8 +44,15 @@ export class WaypointService{
                         rideId
                     }
                 })
-                if(isWayPointsExist)
-                    return handleError("A Set of Waypoints Previously exist, Cant Insert them at bulk");
+                // right now allow the users to override the existing bulk way points
+                // if(isWayPointsExist)
+                //     return handleError("A Set of Waypoints Previously exist, Cant Insert them at bulk");
+                
+                
+                await manager.delete(Waypoint,{
+                    rideId:rideId
+                })
+                
                 let startCount = createBulkWaypoints.waypoints.filter((wp) => {
                     return wp.type === WaypointTypes.START
                 }).length;
