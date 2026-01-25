@@ -19,8 +19,8 @@ export class Ride {
     @Column({type:'enum',enum:RideVisiblity,name:'visiblity'})
     visiblity: string;
 
-    @Column({type: 'bigint',name:'community_id',default:null})
-    communityId: string;
+    @Column({type: 'bigint',name:'crew_id',default:null})
+    crewId: string;
 
     @Column({type:'enum',enum:RideStatus,default:RideStatus.CREATED,name:'ride_status'})
     rideStatus: RideStatus;
