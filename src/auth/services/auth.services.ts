@@ -10,12 +10,15 @@ import { handleResponse } from "src/common/utils/response.utils";
 import { handleError } from "src/common/utils/handle-error";
 import { LoginDto } from "../dtos/login.dto";
 import { Request, Response } from "express";
+import { Profile } from "src/user/entities/profile.entity";
+import { retry } from "rxjs";
 
 
 @Injectable()
 export class AuthService {
     constructor(
         @InjectRepository(User) private userRepository: Repository<User>,
+        @InjectRepository(Profile) private profileRepository: Repository<Profile>,
         @Inject(ConfigService) private configService: ConfigService,
         @Inject(JwtService) private jwtService: JwtService
     ) { }
@@ -45,6 +48,31 @@ export class AuthService {
     async register(registerDto: RegisterDto) {
         try {
             const password_hash = await bcrypt.hash(registerDto.password,12);
+            const existByMail = await this.userRepository.exists({
+                where: {
+                    email: registerDto.email
+                }
+            })
+            if(existByMail)
+                return handleError("A User with the Mail already exist");
+            
+            const existByPhone = await this.userRepository.exists({
+                where: {
+                    phone: registerDto.phone
+                }
+            })
+            if(existByPhone)
+                return handleError("A User with the Phone Number already Exist")
+
+            const existByUserName = await this.profileRepository.exists({
+                where: {
+                    userName: registerDto.username
+                }
+            })
+
+            if(existByUserName)
+                return handleError("A username already exist, try a different unique one")
+
             const user = this.userRepository.create(
                 {
                     
@@ -66,6 +94,7 @@ export class AuthService {
     }
 
     async login(loginDto: LoginDto, res: Response) {
+        console.log("Login Attempt:", loginDto);
         try {
             const user = await this.userRepository.findOne({ where: { email: loginDto.email } })
 
@@ -89,7 +118,16 @@ export class AuthService {
                 `refresh=${refreshToken}; HttpOnly; Path=/auth/refresh; Max-Age=604800; SameSite=Lax`,
             ]);
             
+            const profile = await this.profileRepository.findOne({
+                where:{
+                    userId: user.id
+                }
+            })
+            if(!profile)
+                return handleError("No Profile Exist For the User");
+
             const { passwordHash,status,createdAt,updatedAt,...filteredUser} = user;
+            filteredUser.profile = profile;
             return handleResponse(filteredUser, "Login Successfull");
         } catch (error) {
             return handleError(error.message);
