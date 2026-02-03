@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post, Req } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
 import { WaypointService } from "../services/waypoint.service";
 import { CreateBulkWaypointsDto } from "../dtos/createBulkWaypointsDto";
 import type { Request } from "express";
+import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
 
 @Controller('ride/:rideId/waypoints')
+@UseGuards(JwtAuthGuard)
 export class WaypointController{
     constructor(
         @Inject(WaypointService) private waypointService: WaypointService

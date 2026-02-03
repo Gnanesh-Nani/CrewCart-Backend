@@ -28,7 +28,7 @@ export class FriendsService {
 
     async getMyFriends(@Req() req: Request) {
         try {
-            const userId = req.session.sub;
+            const userId = req.user.sub;
             const friendsData = await this.friendRepository.createQueryBuilder("f")
                     .innerJoin(Profile,'p','p.userId = f.userId')
                     .where('f.userId = :userId',{userId})
@@ -51,7 +51,7 @@ export class FriendsService {
 
     async getFriendRequestList(@Req() req: Request) {
         try {
-            const userId = req.session.sub;
+            const userId = req.user.sub;
             const sended = await this.friendRequestRepository.createQueryBuilder('fr')
                             .innerJoin(Profile,'p','p.userId = fr.receiverId')
                             .where('fr.senderId = :userId',{userId})
@@ -90,7 +90,7 @@ export class FriendsService {
 
     async sendFriendRequest(@Req() req: Request, receiverId: string) {
         try {
-            const senderId = req.session.sub;
+            const senderId = req.user.sub;
             if(senderId == receiverId)
                 return handleError("Sender and Receiver Can't be Same User!")
             const isFriends = await this.isFriends(senderId,receiverId);
@@ -109,7 +109,7 @@ export class FriendsService {
 
     async acceptFriendRequest(@Req() req: Request, senderId: string) {
         try {
-            const accepterId = req.session.sub;
+            const accepterId = req.user.sub;
             
             const friendRequest = await this.friendRequestRepository.findOne({
                 where:{
@@ -143,7 +143,7 @@ export class FriendsService {
 
     async removeFriend(@Req() req: Request, friendId: string) {
         try {
-            const userId = req.session.sub;
+            const userId = req.user.sub;
             let [userId1,userId2] = [userId,friendId];
             await this.friendRepository.delete({
                 userId:userId1,

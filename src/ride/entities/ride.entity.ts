@@ -1,6 +1,7 @@
 import { RideStatus } from "src/common/enums/ride-status.enum";
 import { RideVisiblity } from "src/common/enums/ride-types.enum";
-import { Column, Entity, PrimaryGeneratedColumn,CreateDateColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn,CreateDateColumn, OneToMany } from "typeorm";
+import { Waypoint } from "./waypoint.entity";
 
 @Entity('rides')
 export class Ride {
@@ -25,10 +26,10 @@ export class Ride {
     @Column({type:'enum',enum:RideStatus,default:RideStatus.CREATED,name:'ride_status'})
     rideStatus: RideStatus;
 
-    @Column({name:'start_time',type:'datetime'})
+    @Column({ name: 'start_time', type: 'timestamp' })
     startTime: Date;
 
-    @Column({name:'end_time',type:'datetime'})
+    @Column({ name: 'end_time', type: 'timestamp' })
     endTime: Date;
 
     @CreateDateColumn({name: 'created_at'})

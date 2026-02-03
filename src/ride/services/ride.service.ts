@@ -23,7 +23,7 @@ export class RideService {
 
         try {
             return await this.dataSource.transaction(async (manager) => {
-                const userId = req.session.sub;
+                const userId = req.user.sub;
                 const newRide = manager.create(Ride, {
                     ...createRideDto,
                     creatorId: userId,
@@ -65,7 +65,7 @@ export class RideService {
     }
 
     async updateRide(req:Request,rideId:string,updateRideDto: Partial<CreateRideDto>) {
-        const userId = req.session.sub;
+        const userId = req.user.sub;
         if (!userId)
             return handleError("User Id Should be Not Null");
         if (!rideId) {
@@ -102,7 +102,7 @@ export class RideService {
     }
 
     async acceptRideInvitation(@Req() req: Request, rideId: string) {
-        const userId = req.session.sub;
+        const userId = req.user.sub;
         if (!userId)
             return handleError("User Id Should be Not Null");
         if (!rideId)
@@ -149,7 +149,7 @@ export class RideService {
     }
 
     async leaveRide(@Req() req: Request,rideId:string){
-        const userId = req.session.sub;
+        const userId = req.user.sub;
         if (!userId)
             return handleError("User Id Should be Not Null");
         if (!rideId)
@@ -241,7 +241,7 @@ export class RideService {
 
     async cancelRide(@Req() req: Request, rideId: string) {
         return this.updateRideStatus(
-            req.session.sub,
+            req.user.sub,
             rideId,
             RiderRoles.LEADER,
             RideStatus.CANCELLED,
@@ -251,7 +251,7 @@ export class RideService {
 
     async startRide(@Req() req: Request, rideId: string) {
         return this.updateRideStatus(
-            req.session.sub,
+            req.user.sub,
             rideId,
             RiderRoles.LEADER,
             RideStatus.STARTED,
@@ -261,7 +261,7 @@ export class RideService {
 
     async endRide(@Req() req: Request, rideId: string) {
         return this.updateRideStatus(
-            req.session.sub,
+            req.user.sub,
             rideId,
             RiderRoles.LEADER,
             RideStatus.ENDED,

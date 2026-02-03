@@ -1,8 +1,10 @@
-import { Body, Controller, Delete, Get, Inject, Param, Post, Req } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Inject, Param, Post, Req, UseGuards } from "@nestjs/common";
 import type { Request } from "express";
 import { FriendsService } from "../services/friends.services";
+import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
 
 @Controller('friends')
+@UseGuards(JwtAuthGuard)
 export class FriendsController {
     constructor(
         @Inject(FriendsService) private friendsService: FriendsService

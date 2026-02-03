@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Inject, Param, Patch, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { CreateRideDto } from '../dtos/createRideDto';
 import { RideService } from '../services/ride.service';
 import type { Request } from 'express';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @Controller('ride')
+@UseGuards(JwtAuthGuard)
 export class RideController {
     constructor(
         @Inject() private rideService: RideService
