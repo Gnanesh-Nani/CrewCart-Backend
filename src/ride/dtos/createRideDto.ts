@@ -1,6 +1,6 @@
 import { Type } from "class-transformer";
 import { IsDate, IsEnum, IsISO31661Alpha2, IsNotEmpty, IsString } from "class-validator";
-import { RideVisiblity } from "src/common/enums/ride-types.enum";
+import { RideVisibility } from "src/common/enums/ride-types.enum";
 
 export class CreateRideDto {
     @IsNotEmpty()
@@ -12,8 +12,8 @@ export class CreateRideDto {
     description: string;
 
     @IsNotEmpty()
-    @IsEnum(RideVisiblity)
-    visiblity: RideVisiblity;
+    @IsEnum(RideVisibility)
+    visibility: RideVisibility;
 
     @IsNotEmpty()
     @Type(() => Date)

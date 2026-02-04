@@ -37,7 +37,7 @@ export class RideService {
                     }
                 )
                 await manager.save(rideMember);
-                return handleResponse({}, "Ride Created Succesfully")
+                return handleResponse({ ride: savedRide }, "Ride Created Successfully")
             })
         } catch (error) {
             return handleError(error.message)

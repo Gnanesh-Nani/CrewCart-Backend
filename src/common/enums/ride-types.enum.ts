@@ -1,4 +1,4 @@
-export enum RideVisiblity {
+export enum RideVisibility {
     PUBLIC = 'public',
     PRIVATE = 'private'
 }

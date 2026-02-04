@@ -1,5 +1,5 @@
 import { RideStatus } from "src/common/enums/ride-status.enum";
-import { RideVisiblity } from "src/common/enums/ride-types.enum";
+import { RideVisibility } from "src/common/enums/ride-types.enum";
 import { Column, Entity, PrimaryGeneratedColumn,CreateDateColumn, OneToMany } from "typeorm";
 import { Waypoint } from "./waypoint.entity";
 
@@ -17,8 +17,8 @@ export class Ride {
     @Column({type:'bigint',name:'creator_id'})
     creatorId: string;
 
-    @Column({type:'enum',enum:RideVisiblity,name:'visiblity'})
-    visiblity: string;
+    @Column({type:'enum',enum:RideVisibility,name:'visibility'})
+    visibility: string;
 
     @Column({type: 'bigint',name:'crew_id',default:null})
     crewId: string;
