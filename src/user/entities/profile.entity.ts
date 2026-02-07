@@ -21,6 +21,9 @@ export class Profile {
   @Column({ type: 'text', name: 'avatar_url', nullable: true })
   avatarUrl: string;
 
+  @Column({ type: 'text', name: 'banner_url', nullable: true })
+  bannerUrl: string;
+
   @Column({ type: 'varchar', length: 100, name: 'bike_model', nullable: true })
   bikeModel: string;
 

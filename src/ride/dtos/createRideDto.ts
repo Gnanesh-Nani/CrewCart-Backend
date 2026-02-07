@@ -1,5 +1,6 @@
 import { Type } from "class-transformer";
-import { IsDate, IsEnum, IsISO31661Alpha2, IsNotEmpty, IsString } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumber, IsObject, IsString } from "class-validator";
+import type { LineString } from "geojson";
 import { RideVisibility } from "src/common/enums/ride-types.enum";
 
 export class CreateRideDto {
@@ -22,4 +23,13 @@ export class CreateRideDto {
     @IsNotEmpty()
     @Type(() => Date)
     endTime: Date;
+
+    @IsNotEmpty()
+    @IsNumber()
+    distanceMeters: number;
+
+    @IsNotEmpty()
+    @IsObject()
+    routePath: LineString;
+
 }

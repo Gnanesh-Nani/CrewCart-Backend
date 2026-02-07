@@ -1,3 +1,4 @@
+import { RideMemberStatus } from "src/common/enums/ride-member-status.enum";
 import { RiderRoles } from "src/common/enums/rider-roles.enum";
 import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 
@@ -19,6 +20,19 @@ export class RideMember {
   })
   role: string;
 
-  @CreateDateColumn({ name: 'joined_at' })
-  joinedAt: Date;
+  @Column({
+    type: 'enum',
+    enum: RideMemberStatus,
+    default: RideMemberStatus.JOINED
+  })
+  status: string;
+
+  @Column({ name: 'started_at', type: 'timestamp', nullable: true })
+  startedAt: Date | null;
+
+  @Column({ name: 'completed_at', type: 'timestamp', nullable: true })
+  completedAt: Date | null;
+
+  @CreateDateColumn({ name: 'joined_at' , type: 'timestamp'})
+  joinedAt: Date ;
 }

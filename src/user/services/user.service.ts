@@ -5,11 +5,11 @@ import { DataSource, Repository } from "typeorm";
 import { handleError } from "src/common/utils/handle-error";
 import { handleResponse } from "src/common/utils/response.utils";
 import { UpdateProfileDto } from "../dtos/updateProfile.dto";
-import type { Request } from "express";
 import { Ride } from "src/ride/entities/ride.entity";
 import { RideMember } from "src/ride/entities/ride-members.entity";
 import { Waypoint } from "src/ride/entities/waypoint.entity";
 import _ from "lodash";
+import { RideMemberStatus } from "src/common/enums/ride-member-status.enum";
 
 @Injectable()
 export class UserService {
@@ -40,7 +40,9 @@ export class UserService {
                 "r.startTime AS ride_start_time",
                 "r.endTime AS ride_end_time",
                 "r.createdAt AS ride_created_at",
-
+                "ST_AsGeoJSON(r.routePath) AS ride_route_path",
+                "r.distanceMeters AS ride_distance_meters",
+                "rm.status AS ride_member_status",
                 "wp.id AS waypoint_id",
                 "wp.type AS waypoint_type",
                 "ST_X(wp.location::geometry) AS waypoint_lng",
@@ -50,10 +52,18 @@ export class UserService {
             .getRawMany();
 
         const ridesMap = new Map<string, any>();
+        
+        let totalRidedDistance = 0;
+        let completedRidesCount = 0;
+
 
         for (const row of rows) {
 
             if (!ridesMap.has(row.ride_id)) {
+                if (row.ride_member_status === RideMemberStatus.COMPLETED) {
+                    completedRidesCount++;
+                    totalRidedDistance += Number(row.ride_distance_meters ?? 0);
+                }
                 ridesMap.set(row.ride_id, {
                     id: row.ride_id,
                     title: row.ride_title,
@@ -62,9 +72,12 @@ export class UserService {
                     visibility: row.ride_visibility,
                     crewId: row.ride_crew_id,
                     rideStatus: row.ride_status,
+                    rideMemberStatus: row.ride_member_status,
                     startTime: row.ride_start_time,
                     endTime: row.ride_end_time,
                     createdAt: row.ride_created_at,
+                    routePath: JSON.parse(row.ride_route_path),
+                    distanceMeters: row.ride_distance_meters,
                     waypoints: []
                 });
             }
@@ -80,8 +93,20 @@ export class UserService {
             }
         }
 
+        const averageDistance =
+            completedRidesCount > 0
+                ? totalRidedDistance / completedRidesCount
+                : 0;
+
         return handleResponse(
-            Array.from(ridesMap.values()),
+            {
+                summary: {
+                    totalRidedDistance,        // meters
+                    completedRidesCount,
+                    averageDistance            // meters
+                },
+                rides: Array.from(ridesMap.values())
+            },
             "Rides Retrieved Successfully"
         );
     }
@@ -99,6 +124,7 @@ export class UserService {
                         profile: {
                             fullName: true,
                             avatarUrl: true,
+                            bannerUrl: true,
                             bikeModel: true,
                             bikeNumber: true,
                             userName: true,
