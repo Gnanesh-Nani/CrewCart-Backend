@@ -1,4 +1,4 @@
-import {  Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { CreateBulkWaypointsDto } from "../dtos/createBulkWaypointsDto";
 import { Request } from "express";
 import { handleError } from "src/common/utils/handle-error";
@@ -9,72 +9,93 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { WaypointTypes } from "src/common/enums/waypoint-types.enum";
 
 @Injectable()
-export class WaypointService{
-    constructor(
-        private readonly dataSource: DataSource,
-        @InjectRepository(Waypoint) private waypointRepository: Repository<Waypoint>
-    ){}
+export class WaypointService {
+  constructor(
+    private readonly dataSource: DataSource,
+    @InjectRepository(Waypoint)
+    private waypointRepository: Repository<Waypoint>
+  ) {}
 
-    async getWayPoints(rideId:string){
-        if(!rideId)
-            handleError("Ride Id Should Not be Null");
-        try {
-            const data = await this.waypointRepository.find(
-                {
-                    where:{
-                        rideId
-                    },
-                    select:{}
-                }
-            )
-            return handleResponse(data,"Sucessfully Got Ride Waypoints");
-        }catch(error){
-            return handleError(error.message)
-        }
+  // GET WAYPOINTS
+  async getWayPoints(rideId: string) {
+    if (!rideId) return handleError("Ride Id Should Not be Null");
+
+    try {
+      const data = await this.waypointRepository.find({
+        where: { rideId },
+        order: { orderIndex: "ASC" },
+      });
+
+      const normalizedData = data.map((wp) => ({
+        ...wp,
+        latitude: wp.location?.coordinates?.[1],
+        longitude: wp.location?.coordinates?.[0],
+      }));
+
+      return handleResponse(
+        normalizedData,
+        "Successfully Got Ride Waypoints"
+      );
+    } catch (error) {
+      return handleError(error.message);
     }
+  }
 
-    async createBulkWaypoints(req: Request,rideId:string,createBulkWaypoints: CreateBulkWaypointsDto) {
-        const userId = req.session.sub;
-        if(!userId) 
-            return handleError("userId Cant be Null");
-        try {
-            return this.dataSource.transaction(async (manager) => {
-                const isWayPointsExist = await manager.exists(Waypoint,{
-                    where:{
-                        rideId
-                    }
-                })
-                // right now allow the users to override the existing bulk way points
-                // if(isWayPointsExist)
-                //     return handleError("A Set of Waypoints Previously exist, Cant Insert them at bulk");
-                
-                
-                await manager.delete(Waypoint,{
-                    rideId:rideId
-                })
-                
-                let startCount = createBulkWaypoints.waypoints.filter((wp) => {
-                    return wp.type === WaypointTypes.START
-                }).length;
-                
-                let endCount = createBulkWaypoints.waypoints.filter((wp) => {
-                    return wp.type === WaypointTypes.DESTINATION
-                }).length;
-                if(startCount !== 1 || endCount !== 1)
-                    return handleError("A Bulk WayPoint must have one start waypoint,end waypoint")
+  // CREATE BULK WAYPOINTS
+  async createBulkWaypoints(
+    req: Request,
+    rideId: string,
+    createBulkWaypoints: CreateBulkWaypointsDto
+  ) {
+    const userId = req.user?.sub;
 
-                const waypointEntities = createBulkWaypoints.waypoints.map((wp)=> ({
-                    rideId: rideId,
-                    type: wp.type,
-                    latitude: wp.latitude.toString(),
-                    longitude: wp.longitude.toString(),
-                    orderIndex: wp.orderIndex
-                }))
-                const data = await manager.save(Waypoint,waypointEntities);
-                return handleResponse(data,"Successfully Inserted the data");
-            })
-        } catch(error) {
-            return handleError(error.message);
+    if (!userId) return handleError("userId Cant be Null");
+
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+
+        // Validate Start & Destination
+        const startCount = createBulkWaypoints.waypoints.filter(
+          (wp) => wp.type === WaypointTypes.START
+        ).length;
+
+        const endCount = createBulkWaypoints.waypoints.filter(
+          (wp) => wp.type === WaypointTypes.DESTINATION
+        ).length;
+
+        if (startCount !== 1 || endCount !== 1) {
+          return handleError(
+            "Bulk Waypoints must contain exactly one START and one DESTINATION"
+          );
         }
+
+        // Delete Existing Waypoints
+        await manager.delete(Waypoint, { rideId });
+
+        // Create Entities Safely
+        const waypointEntities = manager.create(
+          Waypoint,
+          createBulkWaypoints.waypoints.map((wp) => ({
+            rideId,
+            type: wp.type,
+            location: {
+              type: "Point" as const,
+              coordinates: [
+                wp.longitude,
+                wp.latitude,
+              ] as [number, number],
+            },
+            orderIndex: wp.orderIndex,
+          }))
+        );
+
+        // Save Entities
+        const data = await manager.save(waypointEntities);
+
+        return handleResponse(data, "Successfully Inserted Waypoints");
+      });
+    } catch (error) {
+      return handleError(error.message);
     }
+  }
 }

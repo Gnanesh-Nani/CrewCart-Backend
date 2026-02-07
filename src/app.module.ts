@@ -6,8 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { SocialModule } from './social/social.module';
-import { JwtSessionMiddleware } from './common/middlewares/jwt-session.middleware';
-import { JwtService } from '@nestjs/jwt';
 import { RideModule } from './ride/ride.module';
 
 @Module({
@@ -20,7 +18,7 @@ import { RideModule } from './ride/ride.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        type:'mysql',
+        type:'postgres',
         host: configService.get<string>('DB_HOST'),
         port: configService.get<number>('DB_PORT'),
         username: configService.get<string>('DB_USER'),
@@ -38,11 +36,6 @@ import { RideModule } from './ride/ride.module';
     RideModule
   ],
   controllers: [AppController],
-  providers: [AppService,JwtService],
+  providers: [AppService],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtSessionMiddleware)
-    .forRoutes('/');
-  }
-}
+export class AppModule {}

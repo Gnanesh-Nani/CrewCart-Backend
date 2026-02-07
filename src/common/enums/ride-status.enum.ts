@@ -4,3 +4,4 @@ export enum RideStatus {
     ENDED = 'ended',
     CANCELLED = 'cancelled'
 }
+

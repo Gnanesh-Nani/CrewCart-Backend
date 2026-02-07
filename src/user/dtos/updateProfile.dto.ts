@@ -7,6 +7,9 @@ export class UpdateProfileDto {
     @IsUrl()
     avatarUrl: string;
     
+    @IsUrl()
+    bannerUrl: string;
+
     @IsString()
     bikeModel: string;
     

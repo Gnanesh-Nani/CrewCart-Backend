@@ -1,5 +1,6 @@
 import { WaypointTypes } from "src/common/enums/waypoint-types.enum";
-import { Check, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import type { Point } from "geojson";
+import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('ride_waypoints')
 export class Waypoint {
@@ -15,11 +16,13 @@ export class Waypoint {
   })
   type: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 7 })
-  latitude: string;
-
-  @Column({ type: 'decimal', precision: 10, scale: 7 })
-  longitude: string;
+  @Index('IDX_waypoint_location', { spatial: true })
+  @Column({
+    type: 'geography',
+    spatialFeatureType: 'Point',
+    srid: 4326,
+  })
+  location: Point;
 
   @Column({ name: 'order_index', type: 'int' })
   orderIndex: number;
