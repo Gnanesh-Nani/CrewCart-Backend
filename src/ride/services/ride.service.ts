@@ -11,6 +11,9 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { RideMemberStatus } from "src/common/enums/ride-member-status.enum";
 import { User } from "src/common/decorators/user.decorator";
 import { RideVisibility } from "src/common/enums/ride-types.enum";
+import { Waypoint } from "../entities/waypoint.entity";
+import { Profile } from "src/user/entities/profile.entity";
+import _ from "lodash";
 
 
 @Injectable()
@@ -18,6 +21,7 @@ export class RideService {
 
     constructor(
         @InjectRepository(Ride) private rideRepository: Repository<Ride>,
+        @InjectRepository(Waypoint) private waypointRepository: Repository<Waypoint>,
         private dataSource: DataSource
     ) { }
 
@@ -73,7 +77,7 @@ export class RideService {
         }
     }
 
-    async getRideDetails(rideId: string) {
+    async getRideDetails(rideId: string,userId: string) {
         if (!rideId) {
             return handleError("Please Enter a valid Ride Id");
         }
@@ -86,7 +90,26 @@ export class RideService {
             if (!ride) {
                 return handleError("No Ride Found", 404);
             }
-
+            const waypoints = await this.waypointRepository.find({
+                where: {
+                    rideId
+                }
+            })
+            ride['waypoints'] = waypoints;
+            const rideMembers = await this.rideRepository.createQueryBuilder('r')
+                                .innerJoin(RideMember,'rm','rm.rideId = r.id')
+                                .innerJoin(Profile,'p','p.userId = rm.userId')
+                                .select([
+                                    "p.userId AS userid",
+                                    "p.userName AS username",
+                                    "p.fullName AS fullname",
+                                    "p.avatarUrl AS avatarurl",
+                                ])
+                                .where('r.id = :rideId',{rideId})
+                                .getRawMany();
+            ride['rideMembers'] = rideMembers;
+            ride['isJoinedByYou'] = rideMembers.some(o => o.userid === userId);
+            ride['leaderName'] = rideMembers.find(o => o.userid === ride.creatorId)?.fullname;
             return handleResponse({ ride }, "Ride Found Successfully");
         } catch (error) {
             return handleError(error.message);

@@ -78,6 +78,7 @@ export class UserService {
                     createdAt: row.ride_created_at,
                     routePath: JSON.parse(row.ride_route_path),
                     distanceMeters: row.ride_distance_meters,
+                    isCreatedByYou: row.ride_creator_id == userId,
                     waypoints: []
                 });
             }
