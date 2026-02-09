@@ -28,8 +28,8 @@ export class RideController {
     }
 
     @Get('/:rideId')
-    async getRideDetails(@Param('rideId') rideId: string) {
-        return this.rideService.getRideDetails(rideId);
+    async getRideDetails(@Param('rideId') rideId: string,@User('sub') userId: string) {
+        return this.rideService.getRideDetails(rideId,userId);
     }
 
     @Post('/:rideId/join')
