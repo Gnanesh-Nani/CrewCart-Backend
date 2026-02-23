@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Inject, Param, Patch, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Patch, Query, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { UserService } from './services/user.service';
 import { UpdateProfileDto } from './dtos/updateProfile.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { User } from 'src/common/decorators/user.decorator';
+import { RideStatus } from 'src/common/enums/ride-status.enum';
 
 @Controller('user')
 @UseGuards(JwtAuthGuard)
@@ -15,6 +16,28 @@ export class UserController {
     @Get('/rides/me')
     async getMyRides(@User('sub') userId: string) {
         return this.userService.getMyRides(userId);
+    }
+
+    @Get('/rides-v2/me')
+    async getMyRidesV2(
+        @User('sub') userId: string,
+        @Query('status') status: RideStatus,
+        @Query('page') page = 1,
+        @Query('limit') limit = 10,
+    ) {
+        return this.userService.getMyRidesV2(
+            userId,
+            status,
+            Number(page),
+            Number(limit),
+        );
+    }
+
+    @Get('/rides/summary')
+    async getMyRidesSummary(
+        @User('sub') userId: string,
+    ) {
+        return this.userService.getMyRideSummary(userId);
     }
 
     @Get('/profile/me')
