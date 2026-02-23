@@ -39,13 +39,48 @@ npm install
 
 ## Environment Setup
 
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory with the following variables:
 
 ```env
-DATABASE_URL=your_database_url
-JWT_SECRET=your_jwt_secret
+# Application
+NODE_ENV=development
+PORT=3000
+
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=your_db_user
+DB_PASSWORD=your_db_password
+DB_NAME=crewride
+
+# JWT Authentication
+JWT_SECRET_KEY=your_jwt_secret_key
+REFRESH_SECRET_KEY=your_refresh_secret_key
+
+# Token Expiration
+JWT_EXPIRATION_TIME=15m
+REFRESH_EXPIRATION_TIME=7d
+
+# External Services
 OSRM_URL=your_osrm_service_url
 ```
+
+### Environment Variables Explanation
+
+| Variable | Description |
+|----------|-------------|
+| `NODE_ENV` | Environment mode (development/production) |
+| `PORT` | Server port number |
+| `DB_HOST` | Database host address |
+| `DB_PORT` | Database port number |
+| `DB_USER` | Database username |
+| `DB_PASSWORD` | Database password |
+| `DB_NAME` | Database name |
+| `JWT_SECRET_KEY` | Secret key for JWT access tokens |
+| `REFRESH_SECRET_KEY` | Secret key for JWT refresh tokens |
+| `JWT_EXPIRATION_TIME` | Access token expiration duration |
+| `REFRESH_EXPIRATION_TIME` | Refresh token expiration duration |
+| `OSRM_URL` | OSRM (Open Route Service Manager) API endpoint |
 
 ## Key Modules
 
