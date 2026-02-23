@@ -1,4 +1,4 @@
-import { Injectable, Req } from "@nestjs/common";
+import { Injectable, Logger, Req } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../entities/user.entity";
 import { DataSource, Repository } from "typeorm";
@@ -10,6 +10,7 @@ import { RideMember } from "src/ride/entities/ride-members.entity";
 import { Waypoint } from "src/ride/entities/waypoint.entity";
 import _ from "lodash";
 import { RideMemberStatus } from "src/common/enums/ride-member-status.enum";
+import { RideStatus } from "src/common/enums/ride-status.enum";
 
 @Injectable()
 export class UserService {
@@ -112,6 +113,119 @@ export class UserService {
         );
     }
 
+    async getMyRideSummary(userId: string) {
+        if (!userId) {
+            return handleError("UserId Should Not Be Null");
+        }
+
+        const result = await this.dataSource
+            .createQueryBuilder(Ride, "r")
+            .innerJoin(RideMember, "rm", "r.id = rm.rideId")
+            .where("rm.userId = :userId", { userId })
+            .andWhere("rm.status = :status", { status: RideMemberStatus.COMPLETED })
+            .select([
+                "COUNT(r.id) AS completed_count",
+                "COALESCE(SUM(r.distanceMeters), 0) AS total_distance"
+            ])
+            .getRawOne();
+
+        const completedRidesCount = Number(result.completed_count ?? 0);
+        const totalRidedDistance = Number(result.total_distance ?? 0);
+
+        const averageDistance =
+            completedRidesCount > 0
+                ? totalRidedDistance / completedRidesCount
+                : 0;
+
+        return handleResponse({
+            totalRidedDistance,
+            completedRidesCount,
+            averageDistance
+        },"Summary Retrived Sucessfully");
+    }
+
+    async getMyRidesV2(
+        userId: string,
+        rideStatus: RideStatus,
+        page = 1,
+        limit = 10,
+        ) {
+        if (!userId) {
+            return handleError("UserId Should Not Be Null");
+        }
+        Logger.debug("status",rideStatus);
+        const skip = (page - 1) * limit;
+
+        // Step 1: Fetch paginated rides only
+        const [rides, total] = await this.dataSource
+            .createQueryBuilder(Ride, "r")
+            .innerJoin(RideMember, "rm", "r.id = rm.rideId")
+            .where("rm.userId = :userId", { userId })
+            .andWhere("r.rideStatus = :rideStatus", { rideStatus })
+            .orderBy("r.createdAt", "DESC")
+            .skip(skip)
+            .take(limit)
+            .select([
+            "r.id",
+            "r.title",
+            "r.description",
+            "r.creatorId",
+            "r.visibility",
+            "r.crewId",
+            "r.rideStatus",
+            "r.startTime",
+            "r.endTime",
+            "r.createdAt",
+            "r.routePath",
+            "r.distanceMeters",
+            "rm.status"
+            ])
+            .getManyAndCount();
+
+        if (!rides.length) {
+            return handleResponse({
+            rides: [],
+            total,
+            page,
+            totalPages: Math.ceil(total / limit),
+            }, "No Rides Found");
+        }
+
+        // Step 2: Fetch waypoints only for these rides
+        const rideIds = rides.map(r => r.id);
+
+        const waypoints = await this.dataSource
+            .createQueryBuilder(Waypoint, "wp")
+            .where("wp.rideId IN (:...rideIds)", { rideIds })
+            .orderBy("wp.orderIndex", "ASC")
+            .getMany();
+
+        const waypointMap = new Map<string, any[]>();
+
+        for (const wp of waypoints) {
+            if (!waypointMap.has(wp.rideId)) {
+            waypointMap.set(wp.rideId, []);
+            }
+            const rideWaypoints = waypointMap.get(wp.rideId);
+            if (rideWaypoints) {
+            rideWaypoints.push(wp);
+            }
+        }
+
+        const formatted = rides.map((ride) => ({
+            ...ride,
+            routePath: ride.routePath ?? null,
+            isCreatedByYou: ride.creatorId === userId,
+            waypoints: waypointMap.get(ride.id) || [],
+        }));
+
+        return handleResponse({
+            rides: formatted,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit),
+        }, "Rides Retrieved Successfully");
+    }
 
     async getProfile(user_id: string) {
         try {
