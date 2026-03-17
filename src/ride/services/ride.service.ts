@@ -110,6 +110,9 @@ export class RideService {
             ride['rideMembers'] = rideMembers;
             ride['isJoinedByYou'] = rideMembers.some(o => o.userid === userId);
             ride['leaderName'] = rideMembers.find(o => o.userid === ride.creatorId)?.fullname;
+            ride['isCreatedByYou'] = (ride.creatorId == userId);
+
+
             return handleResponse({ ride }, "Ride Found Successfully");
         } catch (error) {
             return handleError(error.message);
@@ -307,7 +310,7 @@ export class RideService {
 
             if (newStatus == RideMemberStatus.COMPLETED)
                 rideMember.completedAt = new Date();
-            else if (newStatus == RideMemberStatus.STARTED)
+            else if (newStatus == RideMemberStatus.IN_PROGRESS)
                 rideMember.startedAt = new Date();
 
             await manager.save(rideMember);
@@ -338,7 +341,7 @@ export class RideService {
                     userId,
                     rideId,
                     RideMemberStatus.JOINED,
-                    RideMemberStatus.STARTED
+                    RideMemberStatus.IN_PROGRESS
                 )
                 const ride = await manager.findOne(Ride,{where:{
                     id:rideId

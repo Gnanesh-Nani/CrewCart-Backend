@@ -1,7 +1,7 @@
 export enum RideMemberStatus {
-  JOINED = 'JOINED',
-  STARTED = 'STARTED',
-  COMPLETED = 'COMPLETED',
-  DROPPED = 'DROPPED',
-  REMOVED = 'REMOVED',
+  JOINED = 'joined',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+  LEFT = 'left',
+  REMOVED = 'removed',
 }
