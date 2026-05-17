@@ -3,6 +3,9 @@
 /node_modules
 /build
 
+# Doc
+/doc
+
 # Logs
 logs
 *.log

@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { SocialModule } from './social/social.module';
 import { RideModule } from './ride/ride.module';
+import { RedisModule } from './common/modules/redis/redis.module';
 
 @Module({
   imports: [
@@ -27,9 +28,10 @@ import { RideModule } from './ride/ride.module';
 
         autoLoadEntities: true,
         synchronize: (configService.get<string>('NODE_ENV') === 'development'),  // DEV ONLY (disable in prod)
-        logging: true,
+        //logging: true,
       })
     }),
+    RedisModule,
     AuthModule,
     UserModule,
     SocialModule,
